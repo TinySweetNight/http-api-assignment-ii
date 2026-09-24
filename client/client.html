@@ -6,6 +6,75 @@
   
   <script>
 
+    const handleResponse = async (response) => {
+      const content = document.querySelector('#content');
+
+      switch(response.status) {
+        case 200:
+          content.innerHTML = `<b>Success</b>`;
+          break;
+        case 201:
+          content.innerHTML = `<b>Created</b>`;
+          break;
+        case 204:
+          content.innerHTML = `<b>Updated (No Content)</b>`;
+          break;
+        case 400:
+          content.innerHTML = `<b>Bad Request</b>`;
+          break;
+        case 404:
+          content.innerHTML = `<b>Not Found</b>`;
+          break;
+        default:
+          content.innerHTML = `<b>Not Found</b>`;
+     }
+
+     
+      response.text().then((resText) => {
+        const contentType = response.headers.get('Content-Type');
+
+        console.log(resText);
+
+          //Parse the json back into a javascript object, and display the data.
+          let parsedResponse = JSON.parse(resText);
+          parsedResponse = JSON.stringify(parsedResponse);
+          content.innerHTML += `<p>Message: ${parsedResponse.message}</p>`;
+      });
+   
+      
+    };
+
+
+    const sendFetch = async (url, methods) => {
+       const options = {
+        method: methods,
+        headers: {'Accept': 'application/json'},
+      }
+      fetch(url,options).then((response)=>console.log(response));
+      fetch(url,options).then((response)=> {handleResponse(response)});
+    };
+
+    var url = '/getUsers';
+    var methods = 'GET';
+
+    const init = () =>{
+      const submitButton = document.getElementById('grabUser');
+       const userForm = document.querySelector('#userForm');
+
+      document.querySelector("#urlField").addEventListener("change", function () {
+        url = this.value;});
+
+      document.querySelector("#methodSelect").addEventListener("change", function () {
+        methods = this.value;});
+
+        console.log(url);
+        console.log(methods);
+
+      submitButton.addEventListener('click', () => sendFetch(url, methods));
+    }
+
+    window.onload = init;
+
   </script>
 </head>
 <body>
@@ -27,7 +96,7 @@
         <option value="get">GET</option>
         <option value="head">HEAD</option>
       </select>
-      <input type="submit" value="Get User" />
+      <input type="submit" value="Get User" id="grabUser" />
     </form>
   </section>
   <section id="content">
