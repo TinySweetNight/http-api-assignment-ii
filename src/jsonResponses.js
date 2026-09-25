@@ -4,6 +4,7 @@ const users = {};
 // takes request, response, status code and object to send
 const respondJSON = (request, response, status, object) => {
   const content = JSON.stringify(object);
+  
   response.writeHead(status, {
     'Content-Type': 'application/json',
     'Content-Length': Buffer.byteLength(content, 'utf8'),
@@ -15,7 +16,6 @@ const respondJSON = (request, response, status, object) => {
   if (request.method !== 'HEAD' && status !== 204) {
     response.write(content);
   }
-  
   response.end();
 };
 
