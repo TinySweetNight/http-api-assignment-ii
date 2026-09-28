@@ -7,25 +7,39 @@ const jsonHandler = require('./jsonResponses.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
-
-const handlePost = (request, response, parsedUrl) => {
-  // If they go to /addUser
-  if (parsedUrl.pathname === '/addUser') {
-    // Call our below parseBody handler, and in turn pass in the
-    // jsonHandler.addUser function as the handler callback function.
-    parseBody(request, response, jsonHandler.addUser);
-  }
+const urlStruct = {
+  '/': htmlHandler.getIndex,
+  '/getUsers': jsonHandler.getUsers,
+  '/addUser': jsonHandler.addUser,
+  '/notReal': jsonHandler.notFound,
+  '/style.css': htmlHandler.getCSS,
+  notFound: jsonHandler.notFound,
 };
 
-const handleGet = (request, response, parsedUrl) => {
-  // route to correct method based on url
-  if (parsedUrl.pathname === '/style.css') {
-    htmlHandler.getCSS(request, response);
-  } else if (parsedUrl.pathname === '/getUsers') {
-    jsonHandler.getUsers(request, response);
-  } else {
-    htmlHandler.getIndex(request, response);
-  }
+const parseBody = (request, response, handler) => {
+  // body array.
+  const body = [];
+
+  request.on('error', (err) => {
+    console.dir(err);
+    response.statusCode = 400;
+    response.end();
+  });
+
+
+  request.on('data', (chunk) => {
+    body.push(chunk);
+  });
+
+  request.on('end', () => {
+    const bodyString = Buffer.concat(body).toString();
+
+    request.body = JSON.parse(bodyString);
+
+    // Once we have the bodyParams object, we will call the handler function. We then
+    // proceed much like we would with a GET request.
+    handler(request, response);
+  });
 };
 
 
@@ -38,9 +52,13 @@ const onRequest = (request, response) => {
   // check if method was POST, otherwise assume GET
   // for the sake of this example
   if (request.method === 'POST') {
-    handlePost(request, response, parsedUrl);
+    parseBody(request, response, jsonHandler.addUser);
   } else {
-    handleGet(request, response, parsedUrl);
+    if (urlStruct[parsedUrl.pathname]) {
+      urlStruct[parsedUrl.pathname](request, response);
+    } else {
+      urlStruct.notFound(request, response);
+    }
   }
 };
 
