@@ -33,12 +33,11 @@
       //Parse the response to json. This works because we know the server always
       //sends back json. Await because .json() is an async function.
 
-
       //need some sort of If Statement to stop throwing uncaught error
 
-      const obj = await response.json();
+         const obj = await response.json();
 
-      console.log(obj);
+
 
       //If we have a User or Message, display it.
       if (obj.users) {
